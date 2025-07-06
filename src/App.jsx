@@ -1,17 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion';
+import Confetti from 'react-confetti';
 
 
 function App() {
   const [count, setCount] = useState(0);
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState('light');
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const togglingTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light')
   }
 
   const handleIncrease = () => {
-    setCount(count + 1);
+    setCount(prev => {
+      const newCount = prev + 1;
+      if(newCount % 10 === 0){
+        setShowConfetti(true);
+      }
+      return newCount;
+    })
   }
 
   const handleDescrease = () => {
@@ -24,10 +32,27 @@ function App() {
     setCount(0)
   }
 
+  useEffect(() => {
+    let timer;
+    if(showConfetti){
+      timer = setTimeout(() => {
+        setShowConfetti(false);
+      },5000)
+    }
+    return () => clearTimeout(timer);
+  }, [showConfetti]);
+
   return (
     <div className={`min-h-screen flex flex-col justify-center items-center ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'}`}>
+      {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} 
+      style={{position: 'fixed', top: 0, left: 0, zIndex: 9999}}/>}
       <h1 className={'text-3xl font-bold mb-6'}>Counter App</h1>
-      <motion.div className="text-6xl font-extrabold text-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        key={count}
+        className={`text-6xl font-extrabold text-center ${count > 0 && count % 10 === 0 ? 'text-green-500' : ''}`}>
         {count}
       </motion.div>
       <div className="flex flex-col gap-5 mt-8">
